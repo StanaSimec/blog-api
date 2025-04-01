@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: blogApi
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password:
+  sql:
+    init:
+      mode: always

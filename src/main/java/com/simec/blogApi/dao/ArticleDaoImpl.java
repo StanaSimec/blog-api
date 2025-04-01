@@ -1,0 +1,78 @@
+package com.simec.blogApi.dao;
+
+import com.simec.blogApi.model.Article;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
+
+import java.sql.*;
+import java.util.Optional;
+
+@Component
+public class ArticleDaoImpl implements ArticleDao {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public ArticleDaoImpl(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public int create(Article article) {
+        String sql = "INSERT INTO article (header, content, created_at, updated_at, category_id) VALUES (?, ?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, article.getHeader());
+            ps.setString(2, article.getContent());
+            ps.setTimestamp(3, new Timestamp(article.getCreatedAt().toEpochMilli()));
+            ps.setTimestamp(4, new Timestamp(article.getUpdatedAt().toEpochMilli()));
+            ps.setInt(5, article.getCategoryId());
+            return ps;
+        }, keyHolder);
+        return (int) keyHolder.getKeys().get("id");
+    }
+
+    public Optional<Article> findById(int id) {
+        String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article where id = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new ArticleRowMapper(), id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    public void deleteById(int id) {
+        String sql = "DELETE FROM article WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    public void update(Article article) {
+        String sql = "UPDATE article SET header = ?, content = ?, updated_at = ?, category_id =? WHERE id = ?";
+        jdbcTemplate.update(
+                sql,
+                article.getHeader(),
+                article.getContent(),
+                new Timestamp(article.getUpdatedAt().toEpochMilli()),
+                article.getCategoryId(),
+                article.getId());
+    }
+
+    private static class ArticleRowMapper implements RowMapper<Article> {
+        @Override
+        public Article mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new Article.Builder()
+                    .withId(rs.getInt("id"))
+                    .withHeader(rs.getString("header"))
+                    .withCreatedAt(rs.getTimestamp("created_at").toInstant())
+                    .withContent(rs.getString("content"))
+                    .withUpdatedAt(rs.getTimestamp("updated_at").toInstant())
+                    .withCategoryId(rs.getInt("category_id"))
+                    .build();
+        }
+    }
+}
