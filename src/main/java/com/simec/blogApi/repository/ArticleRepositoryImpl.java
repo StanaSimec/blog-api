@@ -1,28 +1,30 @@
-package com.simec.blogApi;
+package com.simec.blogApi.repository;
 
-import com.simec.blogApi.dao.*;
+import com.simec.blogApi.ArticleDTO;
+import com.simec.blogApi.dao.ArticleDao;
+import com.simec.blogApi.dao.CategoryDao;
 import com.simec.blogApi.exception.ArticleNotFoundException;
 import com.simec.blogApi.exception.CategoryNotFoundException;
 import com.simec.blogApi.model.Article;
 import com.simec.blogApi.model.Category;
 import com.simec.blogApi.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 
-@Service
-public class ArticleRepository {
+@Component
+public class ArticleRepositoryImpl implements ArticleRepository {
 
     private final ArticleDao articleDao;
-    private final TagDao tagDao;
+    private final TagRepository tagRepository;
     private final CategoryDao categoryDao;
 
     @Autowired
-    public ArticleRepository(ArticleDaoImpl articleDao, TagDaoImpl tagDao, CategoryDao categoryDao) {
+    public ArticleRepositoryImpl(ArticleDao articleDao, TagRepository tagRepository, CategoryDao categoryDao) {
         this.articleDao = articleDao;
-        this.tagDao = tagDao;
+        this.tagRepository = tagRepository;
         this.categoryDao = categoryDao;
     }
 
@@ -37,8 +39,7 @@ public class ArticleRepository {
                 .withCategoryId(category.getId())
                 .build();
         int articleId = articleDao.create(article);
-        List<Tag> tagsToAdd = tagDao.findByHeaders(articleDTO.getTags());
-        addTags(tagsToAdd, articleId);
+        tagRepository.assignTags(articleDTO.getTags(), articleId);
         return findById(articleId);
     }
 
@@ -55,13 +56,13 @@ public class ArticleRepository {
                 .withCategoryId(category.getId())
                 .build();
         articleDao.update(updatedArticle);
-        updateTags(articleDTO.getTags(), updatedArticle.getId());
+        tagRepository.assignTags(articleDTO.getTags(), updatedArticle.getId());
         return findById(updatedArticle.getId());
     }
 
     public ArticleDTO findById(int id) {
         Article article = findArticleById(id);
-        List<Tag> tags = tagDao.findByArticleId(id);
+        List<Tag> tags = tagRepository.findByArticleId(id);
         Category category = categoryDao.findByArticleId(article.getId())
                 .orElseThrow(() -> new CategoryNotFoundException(
                         String.format("Category for article id: %d was not found", article.getId())));
@@ -96,34 +97,5 @@ public class ArticleRepository {
                 .map(Tag::getHeader)
                 .toList());
         return dto;
-    }
-
-    private void addTags(List<Tag> tags, int articleId) {
-        tags.forEach(t -> tagDao.assignTagToArticle(t.getId(), articleId));
-    }
-
-    private void removeTags(List<Tag> tags, int articleId) {
-        tags.forEach(t -> tagDao.removeTagFromArticle(t.getId(), articleId));
-    }
-
-    private void updateTags(List<String> tagHeaders, int articleId) {
-        List<Tag> currentTags = tagDao.findByArticleId(articleId);
-        List<Tag> updatedTags = tagDao.findByHeaders(tagHeaders);
-
-        List<Tag> tagsToRemove = currentTags.stream()
-                .filter(tag -> !tagHeaders.contains(tag.getHeader()))
-                .toList();
-
-        if (!tagsToRemove.isEmpty()) {
-            removeTags(tagsToRemove, articleId);
-        }
-
-        List<Tag> tagsToAdd = updatedTags.stream()
-                .filter(t -> !currentTags.contains(t))
-                .toList();
-
-        if (!tagsToAdd.isEmpty()) {
-            addTags(tagsToAdd, articleId);
-        }
     }
 }

@@ -21,6 +21,9 @@ public class CategoryDaoImpl implements CategoryDao {
 
     @Override
     public Optional<Category> findByHeader(String header) {
+        if (header == null) {
+            return Optional.empty();
+        }
         String sql = "SELECT id, header FROM category WHERE header = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new CategoryRowMapper(), header));
