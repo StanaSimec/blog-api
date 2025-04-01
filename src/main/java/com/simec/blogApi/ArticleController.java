@@ -1,6 +1,10 @@
 package com.simec.blogApi;
 
 import com.simec.blogApi.exception.ArticleNotFoundException;
+import com.simec.blogApi.exception.CategoryNotFoundException;
+import com.simec.blogApi.exception.TagNotFoundException;
+import com.simec.blogApi.repository.ArticleRepository;
+import com.simec.blogApi.validator.ArticleValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,12 +14,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class ArticleController {
 
-    private final ArticleRepository articleService;
-    private final Validator validator;
+    private final ArticleRepository repository;
+    private final ArticleValidator validator;
 
     @Autowired
-    public ArticleController(ArticleRepository articleService, Validator validator) {
-        this.articleService = articleService;
+    public ArticleController(ArticleRepository repository, ArticleValidator validator) {
+        this.repository = repository;
         this.validator = validator;
     }
 
@@ -23,22 +27,21 @@ public class ArticleController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> detail(@PathVariable Integer id) {
         validator.validateId(id);
-        ArticleDTO articleDTO = articleService.findById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(articleDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(repository.findById(id));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> create(@RequestBody ArticleDTO articleDTO) {
-        validateArticle(articleDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(articleService.create(articleDTO));
+        validator.validateWithoutId(articleDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(repository.create(articleDTO));
     }
 
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> delete(@PathVariable Integer id) {
         validator.validateId(id);
-        articleService.deleteById(id);
+        repository.deleteById(id);
         return ResponseEntity.status(HttpStatus.OK).body("Article was deleted");
     }
 
@@ -48,9 +51,8 @@ public class ArticleController {
         if (id != articleDTO.getId()) {
             throw new IllegalArgumentException("Provided ids does not match");
         }
-        validator.validateId(id);
-        validateArticle(articleDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(articleService.update(articleDTO));
+        validator.validateWithId(articleDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(repository.update(articleDTO));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -58,15 +60,8 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
-    @ExceptionHandler(ArticleNotFoundException.class)
-    public ResponseEntity<String> handleNotFound(ArticleNotFoundException e) {
+    @ExceptionHandler({ArticleNotFoundException.class, CategoryNotFoundException.class, TagNotFoundException.class})
+    public ResponseEntity<String> handleNotFound(Throwable e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-    }
-
-    private void validateArticle(ArticleDTO articleDTO) {
-        validator.validateHeader(articleDTO.getHeader());
-        validator.validateContent(articleDTO.getContent());
-        validator.validateCategory(articleDTO.getCategory());
-        validator.validateTags(articleDTO.getTags());
     }
 }

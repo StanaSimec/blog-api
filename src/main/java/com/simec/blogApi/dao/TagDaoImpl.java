@@ -25,6 +25,9 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     public Optional<Tag> findByHeader(String header) {
+        if (header == null) {
+            return Optional.empty();
+        }
         String sql = "SELECT id, header FROM tag WHERE header = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new TagRowMapper(), header));
@@ -59,7 +62,7 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     public List<Tag> findByHeaders(List<String> headers) {
-        if (headers.isEmpty()) return List.of();
+        if (headers == null || headers.isEmpty()) return List.of();
         String marks = String.join(",", Collections.nCopies(headers.size(), "?"));
         String sql = String.format("SELECT id, header FROM tag WHERE header IN (%s)", marks);
         return jdbcTemplate.queryForStream(sql, new TagRowMapper(), headers.toArray()).toList();
