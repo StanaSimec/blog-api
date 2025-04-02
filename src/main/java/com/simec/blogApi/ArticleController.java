@@ -55,6 +55,32 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.OK).body(repository.update(articleDTO));
     }
 
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ArticleDTO> patch(@PathVariable Integer id, @RequestBody ArticleDTO articleDTO) {
+        validator.validateId(id);
+        ArticleDTO article = repository.findById(id);
+
+        if (articleDTO.getHeader() != null) {
+            article.setHeader(articleDTO.getHeader());
+        }
+
+        if (articleDTO.getContent() != null) {
+            article.setContent(articleDTO.getContent());
+        }
+
+        if (articleDTO.getCategory() != null) {
+            article.setCategory(articleDTO.getCategory());
+        }
+
+        if (articleDTO.getTags() != null) {
+            article.setTags(articleDTO.getTags());
+        }
+
+        validator.validateWithId(article);
+        return ResponseEntity.status(HttpStatus.OK).body(repository.update(article));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleValidationException(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

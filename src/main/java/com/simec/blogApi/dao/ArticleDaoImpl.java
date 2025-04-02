@@ -38,7 +38,7 @@ public class ArticleDaoImpl implements ArticleDao {
     }
 
     public Optional<Article> findById(int id) {
-        String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article where id = ?";
+        String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article WHERE id = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new ArticleRowMapper(), id));
         } catch (EmptyResultDataAccessException e) {
