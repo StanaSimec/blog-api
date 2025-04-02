@@ -10,6 +10,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -22,6 +24,7 @@ public class ArticleDaoImpl implements ArticleDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public int create(Article article) {
         String sql = "INSERT INTO article (header, content, created_at, updated_at, category_id) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -34,9 +37,10 @@ public class ArticleDaoImpl implements ArticleDao {
             ps.setInt(5, article.getCategoryId());
             return ps;
         }, keyHolder);
-        return (int) keyHolder.getKeys().get("id");
+        return (int) Objects.requireNonNull(keyHolder.getKeys()).get("id");
     }
 
+    @Override
     public Optional<Article> findById(int id) {
         String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article WHERE id = ?";
         try {
@@ -46,11 +50,13 @@ public class ArticleDaoImpl implements ArticleDao {
         }
     }
 
+    @Override
     public void deleteById(int id) {
         String sql = "DELETE FROM article WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
+    @Override
     public void update(Article article) {
         String sql = "UPDATE article SET header = ?, content = ?, updated_at = ?, category_id =? WHERE id = ?";
         jdbcTemplate.update(
@@ -60,6 +66,35 @@ public class ArticleDaoImpl implements ArticleDao {
                 new Timestamp(article.getUpdatedAt().toEpochMilli()),
                 article.getCategoryId(),
                 article.getId());
+    }
+
+    @Override
+    public List<Article> findAll() {
+        String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article";
+        try {
+            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper())
+                    .toList();
+        } catch (EmptyResultDataAccessException e) {
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<Article> findBySearchTerm(String searchTerm) {
+        String sqlTerm = "%" + searchTerm + "%";
+        String sql = """
+                SELECT article.id, article.header, article.content, article.created_at, article.updated_at, article.category_id\s
+                FROM article\s
+                JOIN category ON category.id = article.category_id\s
+                WHERE article.header ILIKE ?\s
+                OR article.content ILIKE ?\s
+                OR category.header ILIKE ?""";
+        try {
+            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper(), sqlTerm, sqlTerm, sqlTerm)
+                    .toList();
+        } catch (EmptyResultDataAccessException e) {
+            return List.of();
+        }
     }
 
     private static class ArticleRowMapper implements RowMapper<Article> {

@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class TagDaoImpl implements TagDao {
@@ -21,19 +20,6 @@ public class TagDaoImpl implements TagDao {
     @Autowired
     public TagDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    @Override
-    public Optional<Tag> findByHeader(String header) {
-        if (header == null) {
-            return Optional.empty();
-        }
-        String sql = "SELECT id, header FROM tag WHERE header = ?";
-        try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new TagRowMapper(), header));
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
     }
 
     @Override

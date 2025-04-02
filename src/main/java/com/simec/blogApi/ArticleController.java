@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class ArticleController {
 
@@ -23,7 +25,7 @@ public class ArticleController {
         this.validator = validator;
     }
 
-    @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> detail(@PathVariable Integer id) {
         validator.validateId(id);
@@ -37,12 +39,12 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(repository.create(articleDTO));
     }
 
-    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @DeleteMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> delete(@PathVariable Integer id) {
         validator.validateId(id);
         repository.deleteById(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Article was deleted");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Article was deleted");
     }
 
     @PutMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -55,7 +57,7 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.OK).body(repository.update(articleDTO));
     }
 
-    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> patch(@PathVariable Integer id, @RequestBody ArticleDTO articleDTO) {
         validator.validateId(id);
@@ -79,6 +81,19 @@ public class ArticleController {
 
         validator.validateWithId(article);
         return ResponseEntity.status(HttpStatus.OK).body(repository.update(article));
+    }
+
+    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ArticleDTO>> findAll(@RequestParam String term) {
+        if (term == null || term.isBlank()) {
+            return ResponseEntity.status(HttpStatus.OK).body(repository.findAll());
+        }
+
+        if (term.length() > 100) {
+            throw new IllegalArgumentException("Search term cannot be longer than 100 characters");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(repository.findBySearchTerm(term));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

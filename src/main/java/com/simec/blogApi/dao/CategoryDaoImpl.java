@@ -1,6 +1,7 @@
 package com.simec.blogApi.dao;
 
 import com.simec.blogApi.model.Category;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -15,6 +16,7 @@ public class CategoryDaoImpl implements CategoryDao {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Autowired
     public CategoryDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }

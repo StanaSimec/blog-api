@@ -28,6 +28,7 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         this.categoryDao = categoryDao;
     }
 
+    @Override
     public ArticleDTO create(ArticleDTO articleDTO) {
         Category category = findCategoryByHeader(articleDTO.getCategory());
 
@@ -43,6 +44,7 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         return findById(articleId);
     }
 
+    @Override
     public ArticleDTO update(ArticleDTO articleDTO) {
         Article article = findArticleById(articleDTO.getId());
         Category category = findCategoryByHeader(articleDTO.getCategory());
@@ -60,6 +62,7 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         return findById(updatedArticle.getId());
     }
 
+    @Override
     public ArticleDTO findById(int id) {
         Article article = findArticleById(id);
         List<Tag> tags = tagRepository.findByArticleId(id);
@@ -69,9 +72,38 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         return toDTO(article, tags, category);
     }
 
+    @Override
     public void deleteById(int id) {
         Article article = findArticleById(id);
         articleDao.deleteById(article.getId());
+    }
+
+    @Override
+    public List<ArticleDTO> findAll() {
+        return articleDao.findAll().stream()
+                .map(a -> {
+                    List<Tag> tags = tagRepository.findByArticleId(a.getId());
+                    Category category = findCategoryByArticleId(a.getId());
+                    return toDTO(a, tags, category);
+                })
+                .toList();
+    }
+
+    @Override
+    public List<ArticleDTO> findBySearchTerm(String searchTerm) {
+        return articleDao.findBySearchTerm(searchTerm).stream()
+                .map(a -> {
+                    List<Tag> tags = tagRepository.findByArticleId(a.getId());
+                    Category category = findCategoryByArticleId(a.getId());
+                    return toDTO(a, tags, category);
+                })
+                .toList();
+    }
+
+    private Category findCategoryByArticleId(int articleId) {
+        return categoryDao.findByArticleId(articleId)
+                .orElseThrow(() -> new CategoryNotFoundException(
+                        String.format("Category for article id: %d was not found", articleId)));
     }
 
     private Category findCategoryByHeader(String header) {
