@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/posts")
 public class ArticleController {
 
     private final ArticleRepository repository;
@@ -25,7 +26,7 @@ public class ArticleController {
         this.validator = validator;
     }
 
-    @GetMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> detail(@PathVariable Integer id) {
         validator.validateId(id);
@@ -39,7 +40,7 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(repository.create(articleDTO));
     }
 
-    @DeleteMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> delete(@PathVariable Integer id) {
         validator.validateId(id);
@@ -47,7 +48,7 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Article was deleted");
     }
 
-    @PutMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> update(@PathVariable Integer id, @RequestBody ArticleDTO articleDTO) {
         if (id != articleDTO.getId()) {
@@ -57,7 +58,7 @@ public class ArticleController {
         return ResponseEntity.status(HttpStatus.OK).body(repository.update(articleDTO));
     }
 
-    @PatchMapping(value = "{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ArticleDTO> patch(@PathVariable Integer id, @RequestBody ArticleDTO articleDTO) {
         validator.validateId(id);
@@ -84,7 +85,7 @@ public class ArticleController {
     }
 
     @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ArticleDTO>> findAll(@RequestParam String term) {
+    public ResponseEntity<List<ArticleDTO>> findAll(@RequestParam(required = false) String term) {
         if (term == null || term.isBlank()) {
             return ResponseEntity.status(HttpStatus.OK).body(repository.findAll());
         }
