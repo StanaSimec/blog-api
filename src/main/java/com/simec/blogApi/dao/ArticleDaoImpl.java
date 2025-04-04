@@ -81,16 +81,25 @@ public class ArticleDaoImpl implements ArticleDao {
 
     @Override
     public List<Article> findBySearchTerm(String searchTerm) {
+        if (searchTerm == null || searchTerm.isBlank()) {
+            return List.of();
+        }
         String sqlTerm = "%" + searchTerm + "%";
         String sql = """
-                SELECT article.id, article.header, article.content, article.created_at, article.updated_at, article.category_id\s
-                FROM article\s
-                JOIN category ON category.id = article.category_id\s
-                WHERE article.header ILIKE ?\s
-                OR article.content ILIKE ?\s
-                OR category.header ILIKE ?""";
+                SELECT DISTINCT article.id, article.header, article.content, article.created_at, article.updated_at, article.category_id
+                FROM article
+                JOIN category
+                ON article.category_id = category.id
+                JOIN article_tag
+                ON article.id = article_tag.article_id
+                JOIN tag
+                ON article_tag.tag_id = tag.id
+                WHERE article.header ILIKE ?
+                OR article.content ILIKE ?
+                OR category.header ILIKE ?
+                OR tag.header ILIKE ?""";
         try {
-            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper(), sqlTerm, sqlTerm, sqlTerm)
+            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper(), sqlTerm, sqlTerm, sqlTerm, sqlTerm)
                     .toList();
         } catch (EmptyResultDataAccessException e) {
             return List.of();

@@ -46,7 +46,7 @@ PATCH /posts/1
 {
     "id": 1,
     "content": "Better article content",
-    "tags": ["Java", "Weekly news"] (optional)
+    "tags": ["Java", "Weekly news"]
 }
 ```
 ## How to delete posts
@@ -68,7 +68,7 @@ GET /posts/1
 ```
 GET /posts?term=searchterm
 ```
-#### Note: Term searches by header, category and content
+#### Note: Term searches by header, category, content and tags
 
 ## Tech Stack
 - Java
