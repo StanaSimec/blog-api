@@ -90,9 +90,9 @@ public class ArticleDaoImpl implements ArticleDao {
                 FROM article
                 JOIN category
                 ON article.category_id = category.id
-                JOIN article_tag
+                LEFT JOIN article_tag
                 ON article.id = article_tag.article_id
-                JOIN tag
+                LEFT JOIN tag
                 ON article_tag.tag_id = tag.id
                 WHERE article.header ILIKE ?
                 OR article.content ILIKE ?
