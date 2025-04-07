@@ -45,7 +45,7 @@ public class ArticleController {
     public ResponseEntity<String> delete(@PathVariable Integer id) {
         validator.validateId(id);
         repository.deleteById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Article was deleted");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -90,8 +90,8 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.OK).body(repository.findAll());
         }
 
-        if (term.length() > 100) {
-            throw new IllegalArgumentException("Search term cannot be longer than 100 characters");
+        if (term.length() > 20) {
+            throw new IllegalArgumentException("Search term cannot be longer than 20 characters");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(repository.findBySearchTerm(term));
