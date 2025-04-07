@@ -72,8 +72,7 @@ public class ArticleDaoImpl implements ArticleDao {
     public List<Article> findAll() {
         String sql = "SELECT id, header, content, created_at, updated_at, category_id FROM article";
         try {
-            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper())
-                    .toList();
+            return jdbcTemplate.query(sql, new ArticleRowMapper());
         } catch (EmptyResultDataAccessException e) {
             return List.of();
         }
@@ -99,8 +98,7 @@ public class ArticleDaoImpl implements ArticleDao {
                 OR category.header ILIKE ?
                 OR tag.header ILIKE ?""";
         try {
-            return jdbcTemplate.queryForStream(sql, new ArticleRowMapper(), sqlTerm, sqlTerm, sqlTerm, sqlTerm)
-                    .toList();
+            return jdbcTemplate.query(sql, new ArticleRowMapper(), sqlTerm, sqlTerm, sqlTerm, sqlTerm);
         } catch (EmptyResultDataAccessException e) {
             return List.of();
         }

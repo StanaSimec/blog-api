@@ -51,7 +51,7 @@ public class TagDaoImpl implements TagDao {
         if (headers == null || headers.isEmpty()) return List.of();
         String marks = String.join(",", Collections.nCopies(headers.size(), "?"));
         String sql = String.format("SELECT id, header FROM tag WHERE header IN (%s)", marks);
-        return jdbcTemplate.queryForStream(sql, new TagRowMapper(), headers.toArray()).toList();
+        return jdbcTemplate.query(sql, new TagRowMapper(), headers.toArray());
     }
 
     private static class TagRowMapper implements RowMapper<Tag> {
