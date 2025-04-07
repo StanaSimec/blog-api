@@ -80,7 +80,7 @@ public class ArticleValidatorImpl implements ArticleValidator {
                 .toList();
         if (validatedTags.isEmpty()) return;
 
-        List<String> savedTags = tagDao.findByHeaders(validatedTags).stream()
+        List<String> savedTags = tagDao.findAllByHeaders(validatedTags).stream()
                 .map(Tag::getHeader)
                 .toList();
 

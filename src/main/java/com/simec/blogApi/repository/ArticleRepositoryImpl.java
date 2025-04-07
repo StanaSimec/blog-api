@@ -40,7 +40,7 @@ public class ArticleRepositoryImpl implements ArticleRepository {
                 .withCategoryId(category.getId())
                 .build();
         int articleId = articleDao.create(article);
-        tagRepository.assignTags(articleDTO.getTags(), articleId);
+        tagRepository.assignTagsByHeadersToArticleId(articleDTO.getTags(), articleId);
         return findById(articleId);
     }
 
@@ -58,7 +58,7 @@ public class ArticleRepositoryImpl implements ArticleRepository {
                 .withCategoryId(category.getId())
                 .build();
         articleDao.update(updatedArticle);
-        tagRepository.assignTags(articleDTO.getTags(), updatedArticle.getId());
+        tagRepository.assignTagsByHeadersToArticleId(articleDTO.getTags(), updatedArticle.getId());
         return findById(updatedArticle.getId());
     }
 

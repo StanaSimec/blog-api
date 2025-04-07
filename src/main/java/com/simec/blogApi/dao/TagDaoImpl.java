@@ -23,7 +23,7 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> findByArticleId(int id) {
+    public List<Tag> findAllByArticleId(int id) {
         String sql = "SELECT tag.id, tag.header FROM tag " +
                 "JOIN article_tag ON article_tag.tag_id = tag.id " +
                 "WHERE article_tag.article_id = ?";
@@ -47,7 +47,7 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> findByHeaders(List<String> headers) {
+    public List<Tag> findAllByHeaders(List<String> headers) {
         if (headers == null || headers.isEmpty()) return List.of();
         String marks = String.join(",", Collections.nCopies(headers.size(), "?"));
         String sql = String.format("SELECT id, header FROM tag WHERE header IN (%s)", marks);

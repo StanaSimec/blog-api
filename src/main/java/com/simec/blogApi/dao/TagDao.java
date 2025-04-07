@@ -5,11 +5,11 @@ import com.simec.blogApi.model.Tag;
 import java.util.List;
 
 public interface TagDao {
-    List<Tag> findByArticleId(int id);
+    List<Tag> findAllByArticleId(int id);
 
     void assignTagToArticle(int tagId, int articleId);
 
-    List<Tag> findByHeaders(List<String> headers);
+    List<Tag> findAllByHeaders(List<String> headers);
 
     void removeTagFromArticle(int tagId, int articleId);
 }

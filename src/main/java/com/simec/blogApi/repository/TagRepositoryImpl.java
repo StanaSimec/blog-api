@@ -18,9 +18,9 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public void assignTags(List<String> headers, int articleId) {
-        List<Tag> currentTags = dao.findByArticleId(articleId);
-        List<Tag> updatedTags = dao.findByHeaders(headers);
+    public void assignTagsByHeadersToArticleId(List<String> headers, int articleId) {
+        List<Tag> currentTags = dao.findAllByArticleId(articleId);
+        List<Tag> updatedTags = dao.findAllByHeaders(headers);
 
         List<Tag> tagsToRemove = currentTags.stream()
                 .filter(tag -> !headers.contains(tag.getHeader()))
@@ -41,14 +41,15 @@ public class TagRepositoryImpl implements TagRepository {
 
     @Override
     public List<Tag> findByArticleId(int articleId) {
-        return dao.findByArticleId(articleId);
+        return dao.findAllByArticleId(articleId);
     }
 
+    //TODO: add batch update
     private void addTags(List<Tag> tags, int articleId) {
         tags.forEach(t -> dao.assignTagToArticle(t.getId(), articleId));
     }
 
-
+    //TODO: add batch delete
     private void removeTags(List<Tag> tags, int articleId) {
         tags.forEach(t -> dao.removeTagFromArticle(t.getId(), articleId));
     }
