@@ -22,12 +22,12 @@ public class TagRepositoryImpl implements TagRepository {
         List<Tag> currentTags = dao.findAllByArticleId(articleId);
         List<Tag> updatedTags = dao.findAllByHeaders(headers);
 
-        List<Tag> tagsToRemove = currentTags.stream()
+        List<Tag> tagsToUnassign = currentTags.stream()
                 .filter(tag -> !headers.contains(tag.getHeader()))
                 .toList();
 
-        if (!tagsToRemove.isEmpty()) {
-            removeTags(tagsToRemove, articleId);
+        if (!tagsToUnassign.isEmpty()) {
+            dao.unassignTagsFromArticleId(tagsToUnassign, articleId);
         }
 
         List<Tag> tagsToAdd = updatedTags.stream()
@@ -35,22 +35,12 @@ public class TagRepositoryImpl implements TagRepository {
                 .toList();
 
         if (!tagsToAdd.isEmpty()) {
-            addTags(tagsToAdd, articleId);
+            dao.assignTagsToArticleId(tagsToAdd, articleId);
         }
     }
 
     @Override
     public List<Tag> findByArticleId(int articleId) {
         return dao.findAllByArticleId(articleId);
-    }
-
-    //TODO: add batch update
-    private void addTags(List<Tag> tags, int articleId) {
-        tags.forEach(t -> dao.assignTagToArticle(t.getId(), articleId));
-    }
-
-    //TODO: add batch delete
-    private void removeTags(List<Tag> tags, int articleId) {
-        tags.forEach(t -> dao.removeTagFromArticle(t.getId(), articleId));
     }
 }

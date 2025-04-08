@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,15 +36,35 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public void assignTagToArticle(int tagId, int articleId) {
-        String sql = "INSERT INTO article_tag(article_id, tag_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, articleId, tagId);
+    public void assignTagsToArticleId(List<Tag> tags, int articleId) {
+        if (tags.isEmpty()) return;
+
+        String marks = String.join(",", Collections.nCopies(tags.size(), "(?,?)"));
+        String sql = String.format("INSERT INTO article_tag(article_id, tag_id) VALUES %s", marks);
+
+        List<Integer> ids = new ArrayList<>();
+        for (Tag tag : tags) {
+            ids.add(articleId);
+            ids.add(tag.getId());
+        }
+
+        jdbcTemplate.update(sql, ids.toArray());
     }
 
     @Override
-    public void removeTagFromArticle(int tagId, int articleId) {
-        String sql = "DELETE FROM article_tag WHERE article_id = ? AND tag_id = ?";
-        jdbcTemplate.update(sql, articleId, tagId);
+    public void unassignTagsFromArticleId(List<Tag> tags, int articleId) {
+        if (tags.isEmpty()) return;
+
+        String marks = String.join(",", Collections.nCopies(tags.size(), "?"));
+        String sql = String.format("DELETE FROM article_tag WHERE article_id = ? AND tag_id IN (%s)", marks);
+
+        List<Integer> ids = new ArrayList<>();
+        ids.add(articleId);
+        for (Tag tag : tags) {
+            ids.add(tag.getId());
+        }
+
+        jdbcTemplate.update(sql, ids.toArray());
     }
 
     @Override

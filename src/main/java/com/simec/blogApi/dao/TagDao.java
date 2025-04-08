@@ -7,9 +7,9 @@ import java.util.List;
 public interface TagDao {
     List<Tag> findAllByArticleId(int id);
 
-    void assignTagToArticle(int tagId, int articleId);
+    void assignTagsToArticleId(List<Tag> tags, int articleId);
 
     List<Tag> findAllByHeaders(List<String> headers);
 
-    void removeTagFromArticle(int tagId, int articleId);
+    void unassignTagsFromArticleId(List<Tag> tags, int articleId);
 }
