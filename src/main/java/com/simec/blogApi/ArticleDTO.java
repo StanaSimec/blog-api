@@ -1,9 +1,11 @@
 package com.simec.blogApi;
 
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.Instant;
 import java.util.List;
 
-public class ArticleDTO {
+public class ArticleDTO extends RepresentationModel<ArticleDTO> {
     private int id;
     private String header;
     private String content;

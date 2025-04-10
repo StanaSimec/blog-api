@@ -75,4 +75,5 @@ GET /posts?term=searchterm
 - Gradle
 - Spring Boot Starter Web
 - Spring Boot Starter JDBC
+- Spring Boot Starter HATEOAS
 - PostgreSQL
